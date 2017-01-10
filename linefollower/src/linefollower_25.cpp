@@ -82,9 +82,9 @@ public:
         double meanBrights[noOfRefPoints];
         int noOfLineDetected = 0;
         // get the average y for all the reference points
-        for (int j = 0; j < noOfRefPoints; j++){
+        for (int j=0; j < noOfRefPoints; j++){
             // create a cutout of the image near the start and initilize an empty array of locations
-            cv::Mat cutout = cv::Mat(res, cv::Rect(refPoints[j], 0, 10, 360));
+            cv::Mat cutout = cv::Mat(res, cv::Rect(refPoints[j], 0, 10, 1080 / scaleFactor));
             std::vector<cv::Point> locations;
             
             // save the locations of the bright pixels in the locations array
@@ -94,8 +94,8 @@ public:
                 ROS_ERROR("No line detected for reference point at x = %d", refPoints[j]);
             }
             
-            // if there are no bright pixels, stop the robot
-            // if there are, publish the coordinates over ros cmd_vel
+            // if there are no bright pixels, set the current mena to zero
+            // if there are, calculate the right mean
             if (locations.size() == 0){
                 meanBrights[j] = 0;
             } else{
