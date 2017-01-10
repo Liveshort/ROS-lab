@@ -84,7 +84,12 @@ public:
         // get the average y for all the reference points
         for (int j=0; j < noOfRefPoints; j++){
             // create a cutout of the image near the start and initilize an empty array of locations
-            cv::Mat cutout = cv::Mat(res, cv::Rect(refPoints[j], 0, 10, 1080 / scaleFactor));
+            cv::Mat cutout;
+            try{
+                cutout = cv::Mat(res, cv::Rect(refPoints[j], 0, 10, 1080 / scaleFactor));
+            } catch (cv::Exception& e){
+                ROS_ERROR("%s: %s", e.err.c_str(), e.msg.c_str());
+            }
             std::vector<cv::Point> locations;
             
             // save the locations of the bright pixels in the locations array
