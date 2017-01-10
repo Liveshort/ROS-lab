@@ -89,6 +89,7 @@ public:
                 cutout = cv::Mat(res, cv::Rect(refPoints[j], 0, 10, 1080 / scaleFactor));
             } catch (cv::Exception& e){
                 ROS_ERROR("%s: %s", e.err.c_str(), e.msg.c_str());
+                return;
             }
             std::vector<cv::Point> locations;
             
