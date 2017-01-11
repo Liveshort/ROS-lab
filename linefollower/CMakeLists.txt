@@ -11,13 +11,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  message_generation
 )
-
-find_package(OpenCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -50,11 +51,11 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  Twist.msg
+  Vector3.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -71,10 +72,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs
-# )
+generate_messages(DEPENDENCIES geometry_msgs)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -109,7 +107,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES linefollower
 #  CATKIN_DEPENDS cv_bridge geometry_msgs image_transport roscpp sensor_msgs std_msgs
-#  DEPENDS system_lib
+  DEPENDS message_runtime
 )
 
 ###########
@@ -139,6 +137,7 @@ include_directories(
 add_executable(linefollower src/linefollower_25.cpp)
 target_link_libraries(linefollower ${catkin_LIBRARIES})
 target_link_libraries(linefollower ${OpenCV_LIBRARIES})
+add_dependencies(linefollower linefollower_generate_messages_cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
