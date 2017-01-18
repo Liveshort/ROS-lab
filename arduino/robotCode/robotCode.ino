@@ -170,7 +170,7 @@ void setup(){
   
   // set up the timer that contiuously updates the speed limit and driving speed
   t.every(400, updateSpeedLimit);
-  t.every(100, updateDrive);
+  t.every(250, updateDrive);
 }
 
 void loop(){

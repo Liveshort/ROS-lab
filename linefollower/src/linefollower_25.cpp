@@ -123,7 +123,7 @@ void draw_sign(int pattern, cv::Mat drawImg, int imgHeight){
             end = cv::Point(118, imgHeight/2 - 12);
             break;
         case 4:
-            end = cv::Point(118, imgHeight/2 - 25);
+            end = cv::Point(130, imgHeight/2 - 25);
             break;
         default:
             end = middle;
@@ -328,8 +328,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
     
     // calculate the ratio between linear and angular speed
     finalRefPoint = (finalRefPoint - imgWidth/2) / (imgWidth/2) * cameraWidth/2;
-    ROS_INFO("%f", finalRefPoint);
-    double linAngRatio = -1 * (finalRefPoint * finalRefPoint + tankToCamera * tankToCamera) / (2 * finalRefPoint);
+    double linAngRatio = (finalRefPoint * finalRefPoint + tankToCamera * tankToCamera) / (2 * finalRefPoint);
     
     // set up the command for publishing
     geometry_msgs::Twist cmd;
