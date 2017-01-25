@@ -10,9 +10,9 @@
 
 #include <sys/time.h>
 
-const double maxDriveSpeed = 0.15;
-const double cameraWidth = 0.16;
-const double tankToCamera = 0.20;
+const double maxDriveSpeed = 0.05;
+const double cameraWidth = 0.15;
+const double tankToCamera = 0.21;
 
 // black out the far corners of an image to improve line detection
 //     also draw the masked area on the original camera view
@@ -281,6 +281,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
     // determine final reference point
     double finalRefPoint;
     double finalSpeedFactor;
+    double extraSteering = 1.0;
     // check for straight line or corner if all data-points are present
     if (noOfLineDetected == noOfRefPoints){
         int pattern = check_pattern(meanBrights, noOfRefPoints);
@@ -313,6 +314,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
         }
         finalRefPoint /= noOfLineDetected;
         finalSpeedFactor = 1 / sqrt(noOfRefPoints - noOfLineDetected + 1);
+        extraSteering = 1.2;
     } else if (noOfSomethingDetected > 0){
         // calculate the mean based on the unreliable points, in the hope that this will go in the general right direction
         finalRefPoint = 0;
@@ -321,6 +323,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
         }
         finalRefPoint /= noOfRefPoints;
         finalSpeedFactor = 1 / sqrt(noOfRefPoints);
+        extraSteering = 1.2;
     } else{
         finalRefPoint = 0;
         finalSpeedFactor = 0;
@@ -333,7 +336,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
     // set up the command for publishing
     geometry_msgs::Twist cmd;
     cmd.linear.x = maxDriveSpeed * finalSpeedFactor;
-    cmd.angular.z = maxDriveSpeed * finalSpeedFactor / linAngRatio;
+    cmd.angular.z = maxDriveSpeed * finalSpeedFactor / linAngRatio * 1.7 * extraSteering;
     ROS_INFO("Linear speed: %f, angular speed: %f", cmd.linear.x, cmd.angular.z);
     
     // publish the command
