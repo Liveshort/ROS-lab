@@ -282,6 +282,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
     double finalRefPoint;
     double finalSpeedFactor;
     double extraSteering = 1.0;
+    // initialize some variables that keep track of driving backwards and standing still
+    static int standingStill = 0;
+    static int driveBackwards = 0;
     // check for straight line or corner if all data-points are present
     if (noOfLineDetected == noOfRefPoints){
         int pattern = check_pattern(meanBrights, noOfRefPoints);
@@ -306,6 +309,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
             default:
                 finalSpeedFactor = 0.4;
         }
+        standingStill = 0;
+        driveBackwards = 0;
     } else if (noOfLineDetected > 0){
         // calculate the mean to use for driving if at least one green point is present
         finalRefPoint = 0;
@@ -315,6 +320,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
         finalRefPoint /= noOfLineDetected;
         finalSpeedFactor = 1 / sqrt(noOfRefPoints - noOfLineDetected + 1);
         extraSteering = 1.2;
+        standingStill = 0;
+        driveBackwards = 0;
     } else if (noOfSomethingDetected > 0){
         // calculate the mean based on the unreliable points, in the hope that this will go in the general right direction
         finalRefPoint = 0;
@@ -324,14 +331,26 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg, ros::Publisher pub){
         finalRefPoint /= noOfRefPoints;
         finalSpeedFactor = 1 / sqrt(noOfRefPoints);
         extraSteering = 1.2;
+        standingStill = 0;
+        driveBackwards = 0;
     } else{
-        finalRefPoint = 0;
-        finalSpeedFactor = 0;
+        // if the tank has been standing still for a few frames, try driving backwards to reaquire the track
+        if (standingStill > 5 && driveBackwards < 20){
+            finalRefPoint = imgWidth/2;
+            finalSpeedFactor = -0.5;
+            driveBackwards++;
+        // if no track is found for too long, just stand still
+        } else{
+            finalRefPoint = imgWidth/2;;
+            finalSpeedFactor = 0;
+        }
+        standingStill++;
     }
     
     // calculate the ratio between linear and angular speed
     finalRefPoint = (finalRefPoint - imgWidth/2) / (imgWidth/2) * cameraWidth/2;
     double linAngRatio = (finalRefPoint * finalRefPoint + tankToCamera * tankToCamera) / (2 * finalRefPoint);
+    ROS_INFO("Linangratio: %f", linAngRatio);
     
     // set up the command for publishing
     geometry_msgs::Twist cmd;
